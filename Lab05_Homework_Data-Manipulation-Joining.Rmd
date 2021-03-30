@@ -1,6 +1,6 @@
 ---
 title: "Lab05_Homework_Data-Manipulation-Joining"
-author: "你是誰 R09342000 新聞所碩五"
+author: "黃詩博 B07701111 工管三"
 date: "2021/03/23"
 output:
   html_document:
@@ -52,13 +52,18 @@ df_dmajor_105 %>%
 
 ### 處理 NA
 # 全部踢掉
-df_dmajor_105 %>% drop_na() %>% head(5)
+df_dmajor_105 %>% 
+  drop_na() %>% 
+  head(5)
 
 # 按照預設值修改
-df_dmajor_105 %>% replace_na(list(ID_year = "missing", dept_original = "unknown", grade = 0)) %>% head(5)
+df_dmajor_105 %>% 
+  replace_na(list(ID_year = "missing", dept_original = "unknown", grade = 0)) %>% 
+  head(5)
 
 ### 因為這題資料的缺失值會影響結果計算，因此全數踢掉
-df_dmajor_105 <- df_dmajor_105 %>% drop_na()
+df_dmajor_105 <- df_dmajor_105 %>% 
+  drop_na()
 ```
 
 
@@ -70,7 +75,9 @@ B. 再幫我把 `df_dmajor_105_tmp` 分開成三個欄位分別叫做 "ID_year",
 
 ```{r message=FALSE, warning=FALSE}
 ### your code (A)
-df_dmajor_105_tmp <- df_dmajor_105 %>% unite(col = "ID", c(ID_year, ID_dept, ID_order), sep = "-")
+df_dmajor_105_tmp <- df_dmajor_105 %>% 
+  unite(col = "ID", c(ID_year, ID_dept, ID_order), sep = "-")
+
 df_dmajor_105_tmp
 
 ### your result should be
@@ -90,7 +97,8 @@ df_dmajor_105_tmp
 #> # … with 488 more rows
 
 ### your code (B)
-df_dmajor_105_tmp %>% separate(col = ID, into = c("ID_year", "ID_dept", "ID_order"), sep = "-")
+df_dmajor_105_tmp %>% 
+  separate(col = ID, into = c("ID_year", "ID_dept", "ID_order"), sep = "-")
 
 ### your result should be
 #> # A tibble: 498 x 7
@@ -123,7 +131,7 @@ B. 請幫我找出**向外**雙主修科系最多元的系所
 ### your code (A)
 df_dmajor_105 %>%
   group_by(dept_original) %>%
-  summarise(n = n()) %>%
+  summarise(n = n()) %>% 
   ungroup() %>%
   filter(n == max(n))
 
@@ -135,7 +143,7 @@ df_dmajor_105 %>%
 
 ### your code (B)
 df_dmajor_105 %>%
-  group_by(dept_original) %>%
+  group_by(dept_original) %>% 
   summarise(n_major = n_distinct(dept_dmajor)) %>%
   ungroup() %>%
   filter(n_major == max(n_major))
@@ -154,7 +162,11 @@ df_dmajor_105 %>%
 
 ```{r message=FALSE, warning=FALSE}
 ### your code
-
+df_college_join %>% 
+  left_join(df_dmajor_105, by = c("dept" = "dept_original")) %>% 
+  drop_na() %>%
+  count(college) %>% 
+  mutate(per = n / sum(n)) 
 ### your result should be
 #> # A tibble: 10 x 3
 #>    college      n     per
@@ -177,7 +189,16 @@ df_dmajor_105 %>%
 
 ```{r message=FALSE, warning=FALSE}
 ### your code
+df_dmajor_105_college <- df_college_join %>%
+  left_join(df_dmajor_105, by = c("dept" = "dept_original")) %>%
+  left_join(df_college_join, by = c("dept_dmajor" = "dept"), suffix = c("_original", "_dmajor")) %>% 
+  drop_na() %>% 
+  count(college_original, college_dmajor) %>%
+  group_by(college_original) %>%
+  mutate(per = n / sum(n)) %>%
+  ungroup()
 
+df_dmajor_105_college
 ### your result should be
 #> # A tibble: 70 x 4
 #> # Groups:   college_original [10]
@@ -202,6 +223,11 @@ df_dmajor_105 %>%
 
 ```{r message=FALSE,warning=FALSE}
 ### your code
+df_dmajor_105_college <- df_dmajor_105_college %>% 
+  select(college_original, college_dmajor, per) 
+df_dmajor_105_college %>%
+  pivot_wider(names_from = college_dmajor, values_from = per,
+              values_fill = list(per = 0)) 
 
 ### your result should be 
 #> # A tibble: 10 x 11
