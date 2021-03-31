@@ -69,24 +69,31 @@ df_reservoir_raw %>% mutate(county = str_sub(town, 1, 3)) %>%
 df_reservoir_agg_area <- df_reservoir_raw %>% mutate(county = str_sub(town, 1, 3)) %>%
   group_by(area) %>% 
   summarise(n_town = n_distinct(county),
-            n_name = n_distinct(name))
+            n_name = n_distinct(name)) 
 
 # A. 畫各個區域(area)有多少縣市有水庫
 df_reservoir_agg_area %>%
-  # ggplot...
-  # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
-  # theme(text = element_text(family = "微軟正黑體"))
+  ggplot(aes(x = area, y = n_town)) +
+  geom_col() +
+  theme(text = element_text(family = "STHeiti"))
+  #theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
+  #theme(text = element_text(family = "微軟正黑體"))
 
 # B. 畫各個區域(area)有多少水庫
 df_reservoir_agg_area %>%
-  # ggplot...
-  # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
-  # theme(text = element_text(family = "微軟正黑體"))
-
+  ggplot(aes(x = area, y = n_name)) +
+  geom_col() +
+  theme(text = element_text(family = "STHeiti"))
+  #theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
+  #theme(text = element_text(family = "微軟正黑體"))
+?gather
 # C. 畫在一起
 df_reservoir_agg_area %>%
-  # ggplot...
+  pivot_longer(names_to = "type", values_to = "value", cols = 2:3) %>%
+  ggplot(aes(x = area, y = value)) +
+  geom_col() +
   facet_wrap(type ~ .) +
+  theme(text = element_text(family = "STHeiti"))
   # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
   # theme(text = element_text(family = "微軟正黑體"))
   
@@ -103,8 +110,8 @@ B. 台灣本島蓄水量各區域蓄水量百分比的併排長條圖
 # 為什麼看本島而已幹嘛欺負澎湖人
 df_reservoir_raw %>%
   filter(date == "2/1") %>% 
-  group_by(year, area) %>%
-  summarise(value = sum(value))
+  group_by(year, area) %>% 
+  summarise(value = sum(value)) 
 
 # 第一步: 計算每年、每區的蓄水量
 df_reservoir_raw %>%
@@ -119,8 +126,8 @@ df_reservoir_raw %>%
   filter(date == "2/1") %>% 
   group_by(year, area) %>%
   summarise(value = sum(value)) %>% ungroup() %>%
-  group_by(year) %>% mutate(per = value/sum(value))
-
+  group_by(year) %>% mutate(per = value/sum(value)) 
+  
 # 第三步：畫畫
 df_reservoir_agg_year <- df_reservoir_raw %>%
   filter(area != "澎湖地區") %>%
@@ -131,13 +138,17 @@ df_reservoir_agg_year <- df_reservoir_raw %>%
 
 # A. 台灣本島蓄水量各區域蓄水量百分比的堆疊長條圖
 df_reservoir_agg_year %>%
-  # ggplot...
+  ggplot(aes(x = year, y = per, fill = area)) +
+  geom_col() +
+  theme(text = element_text(family = "STHeiti"))
   # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
   # theme(text = element_text(family = "微軟正黑體"))
 
 # B. 台灣本島蓄水量各區域蓄水量百分比的併排長條圖
 df_reservoir_agg_year %>%
-  # ggplot...
+  ggplot(aes(x = year, y = per, fill = area)) +
+  geom_col(position = "dodge") +
+  theme(text = element_text(family = "STHeiti"))
   # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
   # theme(text = element_text(family = "微軟正黑體"))
 
@@ -161,32 +172,22 @@ df_reservoir_raw %>% filter(name == "石門水庫") %>% filter(year == 2019) %>%
 df_reservoir_raw %>% select(date, percentage) %>% head(5)
 
 df_reservoir_raw %>% filter(name == "石門水庫") %>% filter(year == 2019) %>%
-  mutate(percentage = str_remove_all(percentage, " |\\%")) %>%
+  mutate(percentage = str_remove_all(percentage, " |%")) %>%
   mutate(percentage = as.numeric(percentage)) %>%
   mutate(percentage = percentage/100) %>%
   mutate(date2 = str_c(year, "/", date)) %>%
   mutate(date2 = as_date(date2)) %>%
   filter(!is.na(date2)) %>%
-  # ggplot...
+  ggplot(aes(x = date2, y = percentage)) +
+  geom_line() +
+  theme(text = element_text(family = "STHeiti"))
   # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
   # theme(text = element_text(family = "微軟正黑體"))
 
 # B. 石門水庫蓄水量百分比變化: 想看這三年間 1 月的比較
-df_reservoir_raw %>% filter(name == "石門水庫") %>% 
-  mutate(percentage = str_remove_all(percentage, " |\\%")) %>%
-  mutate(percentage = as.numeric(percentage)) %>%
-  mutate(percentage = percentage/100) %>%
-  mutate(date2 = str_c(year, "/", date)) %>%
-  mutate(date2 = as_date(date2)) %>%
-  filter(!is.na(date2)) %>%
-  mutate(month = month(date2)) %>%
-  filter(month == 1) %>%
-  # ggplot...
-  # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
-  # theme(text = element_text(family = "微軟正黑體"))
 
 df_reservoir_raw %>% filter(name == "石門水庫") %>% 
-  mutate(percentage = str_remove_all(percentage, " |\\%")) %>%
+  mutate(percentage = str_remove_all(percentage, " |%")) %>%
   mutate(percentage = as.numeric(percentage)) %>%
   mutate(percentage = percentage/100) %>%
   mutate(date2 = str_c(year, "/", date)) %>%
@@ -194,23 +195,11 @@ df_reservoir_raw %>% filter(name == "石門水庫") %>%
   filter(!is.na(date2)) %>%
   mutate(month = month(date2)) %>%
   mutate(day = day(date2)) %>%
-  filter(month == 1) %>%
-  # ggplot...
-  # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
-  # theme(text = element_text(family = "微軟正黑體"))
-
-df_reservoir_raw %>% filter(name == "石門水庫") %>% 
-  mutate(percentage = str_remove_all(percentage, " |\\%")) %>%
-  mutate(percentage = as.numeric(percentage)) %>%
-  mutate(percentage = percentage/100) %>%
-  mutate(date2 = str_c(year, "/", date)) %>%
-  mutate(date2 = as_date(date2)) %>%
-  filter(!is.na(date2)) %>%
-  mutate(month = month(date2)) %>%
-  mutate(day = day(date2)) %>%
-  mutate(year = as.factor(year)) %>%
-  filter(month == 1) %>%
-  # ggplot...
+  mutate(year = as.character(year)) %>%
+  filter(month == 1) %>% 
+  ggplot(aes(x = day, y = percentage, color = year)) +
+  geom_line() +
+  theme(text = element_text(family = "STHeiti"))
   # theme(text = element_text(family = "Noto Sans CJK TC Medium")) 
   # theme(text = element_text(family = "微軟正黑體"))
 
